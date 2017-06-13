@@ -11,6 +11,13 @@
 #define YM 9   // can be a digital pin
 #define XP 8   // can be a digital pin
 
+#define primaRiga 10
+#define secondaRiga 40
+#define terzaRiga 70
+#define quartaRiga 100
+
+
+
 const int PIN_SD = 4; // pin of sd card
 
 // Declare which fonts we will be using
@@ -26,6 +33,8 @@ UTFT tft(ILI9341_S5P, 51, 52, 5, 0, 6);
 
 int tempSoglia = 20;
 String currentMenu = "";
+String statusSettori = "";
+String statusSettoriMessage = "";
 
 TouchScreen ts(A0, A3, A2, A1); // LANDSCAPE init TouchScreen port pins
 
@@ -49,7 +58,7 @@ void setup() {
 	Serial.begin(9600);
 
 	tft.InitLCD();
-
+	statusSettoriMessage = "Settori non programmati";
 	createMainMenu();
 	/*
 	Sd2Card card;
@@ -82,6 +91,9 @@ void setup() {
 #define TS_MINX 12
 #define TS_MAXX 930
 
+#define riga2_x 30
+#define riga2_y 0
+
 void retrieveTouch() {
 	// a point object holds x y and z coordinates
 	TSPoint p = ts.getPoint();
@@ -102,9 +114,16 @@ void loop() {
 
 		if (x > 100 && x < 140) {
 			if (y > 50 && y < 85) {
+				// questo è la soglia
 				currentMenu = "S";
 				disegnaMenu();
 				disegnaCursore();
+			}
+		}else if(x > 0 && x < 30){
+			// col blocco precedente non passa più sul pulsante più
+			if (y > 40 && y < 55) {
+				Serial.print("ORE\n");
+
 			}
 		}else if (x > 0 && x < 40) {
 			if (y > 200 && y < 240) {
@@ -138,15 +157,15 @@ void disegnaCursore() {
 	if (currentMenu == "S") {
 		tft.setColor(255, 255, 255);
 		tft.setBackColor(0, 0, 0);
-		tft.print("Soglia", LEFT, 60);
+		tft.print("Soglia", LEFT, terzaRiga);
 		tft.setColor(255, 0, 0);
-		tft.printNumI(tempSoglia, 100, 60);
+		tft.printNumI(tempSoglia, 100, terzaRiga);
 		tft.setColor(255, 255, 255);
 	}else {
 		tft.setColor(255, 255, 255);
 		tft.setBackColor(0, 0, 0);
-		tft.print("Soglia", LEFT, 60);
-		tft.printNumI(tempSoglia, 100, 60);
+		tft.print("Soglia", LEFT, terzaRiga);
+		tft.printNumI(tempSoglia, 100, terzaRiga);
 	}
 }
 
@@ -179,36 +198,31 @@ void createMainMenu() {
 	tft.setColor(255, 0, 0);
 	tft.fillRect(0, 0, 319, 13);
 
-	tft.setColor(64, 64, 64);
-	tft.fillRect(0, 226, 319, 239);
-
-	tft.setColor(255, 255, 255);
 	tft.setBackColor(255, 0, 0);
 	tft.print("header", CENTER, 1);
-
-	tft.setBackColor(64, 64, 64);
-	tft.setColor(255, 255, 0);
-	tft.print("footer", CENTER, 227);
+	tft.setFont(SmallFont);
+	tft.setFont(SevenSegNumFont);
 	*/
 
-	//tft.setFont(SevenSegNumFont);
-
+	
 	tft.setFont(BigFont);
-	tft.print("12", LEFT, 10);
-
-	tft.print("gradi", 30, 8);
-	tft.setFont(BigFont);
-	tft.print("16:08.41", LEFT, 30);
+	
+	tft.print("11.06.2017", LEFT, primaRiga);
+	tft.print("Dom", 180, primaRiga);
+	
+	
+	tft.print("16:08.41", LEFT, secondaRiga);
+	tft.print(statusSettoriMessage, LEFT, quartaRiga);
 
 	//l'altezza del carattere è 15 pixel
-	tft.fillRect(0,30,30,45); // ora
+	tft.fillRect(0, 40, 30, 55); // ora
 	tft.fillRect(50, 40, 80, 45); // minuti
 	tft.fillRect(98, 40, 128, 45); // secondi
 
 	disegnaCursore();
 
-	tft.print("Sistema ON", LEFT, 90);
+	//tft.print("Sistema ON", LEFT, 90);
 
-	//tft.setFont(SmallFont);
+	
 
 }
