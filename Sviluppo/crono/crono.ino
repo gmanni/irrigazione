@@ -112,45 +112,43 @@ void loop() {
 		Serial.print("\ty = ");
 		Serial.println(y);
 
-		if (x > 100 && x < 140) {
-			if (y > 50 && y < 85) {
+		if (y > 50 && y < 85) {
+			if (x > 100 && x < 140) {
 				// questo è la soglia
 				currentMenu = "S";
 				disegnaMenu();
 				disegnaCursore();
 			}
-		}else if(x > 0 && x < 30){
-			// col blocco precedente non passa più sul pulsante più
-			if (y > 40 && y < 55) {
-				Serial.print("ORE\n");
-
+		}else if(y>30 && y<45){
+			if (x > 0 && x < 30) {
+				Serial.println("ore");
+			}else if (x>50 && x<80) {
+				Serial.println("minuti");
+			}else if (x>98 && x<128) {
+				Serial.println("secondi");
 			}
-		}else if (x > 0 && x < 40) {
-			if (y > 200 && y < 240) {
+		}else if (y > 200 && y < 240) {
+			if (x > 0 && x < 40) {
 				Serial.println("puls +");
 				if (currentMenu == "S") {
 					tempSoglia++;
 					disegnaCursore();
 				}
 			}
-		}else if (x>60 && x<100) {
-			if (y > 200 && y < 240) {
+			else if (x > 60 && x < 100) {
 				Serial.println("puls -");
 				if (currentMenu == "S") {
 					tempSoglia--;
 					disegnaCursore();
 				}
 			}
-		}else if (x > 120 && x < 180) {
-			if (y > 200 && y < 240) {
+			else if (x > 120 && x < 180) {
 				Serial.println("puls esc");
 				currentMenu = "";
 				disegnaMenu();
 				disegnaCursore();
-
 			}
 		}
-
 	}
 }
 void disegnaCursore() {
