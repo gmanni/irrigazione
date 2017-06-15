@@ -57,10 +57,11 @@ int x, y, z;
 // Remember to change the model parameter to suit your display module!
 UTFT tft(ILI9341_S5P, 51, 52, 5, 0, 6);
 
-int tempSoglia = 20;
+
 String currentMenu = "";
 String statusSettori = "";
 String statusSettoriMessage = "";
+_orario orario;
 
 TouchScreen ts(A0, A3, A2, A1); // LANDSCAPE init TouchScreen port pins
 
@@ -82,8 +83,11 @@ TouchScreen ts(A0, A3, A2, A1); // LANDSCAPE init TouchScreen port pins
 		*/
 void setup() {
 	Serial.begin(9600);
+	orario.ora = 16;
+	orario.minuti = 37;
+
 	settori[0].nome = "settore 1";
-	settori[0].abilitato = true;
+	settori[0].abilitato = false;
 	// lunedì
 	settori[0].programmazione[0].giorno = 1;
 	settori[0].programmazione[0].attivita[0].on.ora = 12;
@@ -106,7 +110,7 @@ void setup() {
 	
 	tft.InitLCD();
 	
-	statusSettoriMessage = "Settori non programmati";
+	//statusSettoriMessage = "Settori non programmati";
 	createMainMenu();
 	/*
 	Sd2Card card;
@@ -151,7 +155,7 @@ void retrieveTouch() {
 	z = p.z;
 }
 
-bool getStatusSettori() {
+void getStatusSettori() {
 	bool trovato = false;
 	int i;
 	for (i = 0; i<3; i++) {
@@ -160,16 +164,19 @@ bool getStatusSettori() {
 			break;
 		}
 	}
-	return trovato;
-}
-
-void loop() {
-	retrieveTouch();
-	if(getStatusSettori()) {
+	if (trovato) {
 		statusSettoriMessage = "settori abilitati";
 	}else {
 		statusSettoriMessage = "settori non abilitati";
 	}
+	// messaggio di stato settori
+	tft.print(statusSettoriMessage, LEFT, quartaRiga);
+	
+}
+
+void loop() {
+	retrieveTouch();
+	getStatusSettori();
 	if (z > MINPRESSURE && z < MAXPRESSURE) {
 		Serial.print("x = ");
 		Serial.print(x);
@@ -179,15 +186,21 @@ void loop() {
 		if (y > 50 && y < 85) {
 			if (x > 100 && x < 140) {
 				// questo è la soglia
-				currentMenu = "S";
-				disegnaMenu();
-				disegnaCursore();
+				
 			}
 		}else if(y>30 && y<45){
 			if (x > 0 && x < 30) {
 				Serial.println("ore");
+				currentMenu = "O";
+				disegnaMenu();
+				disegnaCursore();
+
 			}else if (x>50 && x<80) {
 				Serial.println("minuti");
+				currentMenu = "M";
+				disegnaMenu();
+				disegnaCursore();
+
 			}else if (x>98 && x<128) {
 				Serial.println("secondi");
 			}
@@ -195,14 +208,25 @@ void loop() {
 			if (x > 0 && x < 40) {
 				Serial.println("puls +");
 				if (currentMenu == "S") {
-					tempSoglia++;
+					
+				}else if (currentMenu == "O") {
+					orario.ora++;
+					disegnaCursore();
+				}else if (currentMenu == "M") {
+					orario.minuti++;
 					disegnaCursore();
 				}
+
 			}
 			else if (x > 60 && x < 100) {
 				Serial.println("puls -");
 				if (currentMenu == "S") {
-					tempSoglia--;
+					
+				}else if (currentMenu == "O") {
+					orario.ora--;
+					disegnaCursore();
+				}else if (currentMenu == "M") {
+					orario.minuti--;
 					disegnaCursore();
 				}
 			}
@@ -217,20 +241,25 @@ void loop() {
 }
 void disegnaCursore() {
 	if (currentMenu == "S") {
-		tft.setColor(255, 255, 255);
+		
+	}else if (currentMenu == "O") {
 		tft.setBackColor(0, 0, 0);
-		tft.print("Soglia", LEFT, terzaRiga);
 		tft.setColor(255, 0, 0);
-		tft.printNumI(tempSoglia, 100, terzaRiga);
+		tft.print(String(orario.ora, DEC), LEFT, secondaRiga);
 		tft.setColor(255, 255, 255);
-	}else {
+	}else if (currentMenu == "M") {
+		tft.setBackColor(0, 0, 0);
+		tft.setColor(255, 0, 0);
+		tft.print(String(orario.minuti, DEC), 50, secondaRiga);
+		tft.setColor(255, 255, 255);
+	}else{
 		tft.setColor(255, 255, 255);
 		tft.setBackColor(0, 0, 0);
-		tft.print("Soglia", LEFT, terzaRiga);
-		tft.printNumI(tempSoglia, 100, terzaRiga);
+		
+		
+		tft.print(String(orario.ora, DEC) + ":" + String(orario.minuti, DEC), LEFT, secondaRiga);
 
-		// messaggio di stato settori
-		tft.print(statusSettoriMessage, LEFT, quartaRiga);
+		
 	}
 }
 
@@ -277,14 +306,19 @@ void createMainMenu() {
 	tft.print("Dom", 180, primaRiga);
 	
 	// ora corrente
-	tft.print("16:08.41", LEFT, secondaRiga); // forse conviene eliminare i secondi che servono a poco
-	
-	
+	//tft.print(String(orario.ora, DEC) + ":" + String(orario.minuti, DEC), LEFT, secondaRiga);
+
+	//tft.print(orario.ora + ":" + orario.minuti, LEFT, secondaRiga); // forse conviene eliminare i secondi che servono a poco
 
 	//l'altezza del carattere è 15 pixel
-	tft.fillRect(0, 40, 30, 55); // ora
-	tft.fillRect(50, 40, 80, 45); // minuti
-	tft.fillRect(98, 40, 128, 45); // secondi
+	//tft.fillRect(0, 40, 30, 55); // ora
+	//tft.fillRect(50, 40, 80, 45); // minuti
+	//tft.fillRect(98, 40, 128, 45); // secondi
+
+	// posizionamenti giorno mese e anno
+	tft.fillRect(0, 0, 30, 23); // giorno
+	tft.fillRect(50, 0, 80, 15); // mese
+	tft.fillRect(98, 0, 160, 15); // anno
 
 	disegnaCursore();
 
