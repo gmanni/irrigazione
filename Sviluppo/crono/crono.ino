@@ -16,7 +16,33 @@
 #define terzaRiga 70
 #define quartaRiga 100
 
+typedef struct _orario
+{
+	int ora;
+	int minuti;
+};
 
+typedef struct _attivita
+{
+	_orario on;
+	_orario off;
+};
+
+typedef struct _giornata
+{
+	int giorno;
+	_attivita attivita[4];
+};
+
+typedef struct _settore
+{
+	String nome;
+	bool abilitato;
+	_giornata programmazione[7];
+
+};
+
+_settore settori[3];
 
 const int PIN_SD = 4; // pin of sd card
 
@@ -56,8 +82,30 @@ TouchScreen ts(A0, A3, A2, A1); // LANDSCAPE init TouchScreen port pins
 		*/
 void setup() {
 	Serial.begin(9600);
+	settori[0].nome = "settore 1";
+	settori[0].abilitato = true;
+	// lunedì
+	settori[0].programmazione[0].giorno = 1;
+	settori[0].programmazione[0].attivita[0].on.ora = 12;
+	settori[0].programmazione[0].attivita[0].on.minuti = 0;
+	settori[0].programmazione[0].attivita[0].off.ora = 12;
+	settori[0].programmazione[0].attivita[0].off.minuti = 5;
 
+	// martedì
+	settori[0].programmazione[0].giorno = 2;
+	settori[0].programmazione[0].attivita[0].on.ora = 13;
+	settori[0].programmazione[0].attivita[0].on.minuti = 0;
+	settori[0].programmazione[0].attivita[0].off.ora = 13;
+	settori[0].programmazione[0].attivita[0].off.minuti = 5;
+	
+	settori[1].nome = "settore 2";
+	settori[1].abilitato = false;
+	
+	settori[2].nome = "settore 3";
+	settori[2].abilitato = false;
+	
 	tft.InitLCD();
+	
 	statusSettoriMessage = "Settori non programmati";
 	createMainMenu();
 	/*
@@ -103,9 +151,25 @@ void retrieveTouch() {
 	z = p.z;
 }
 
+bool getStatusSettori() {
+	bool trovato = false;
+	int i;
+	for (i = 0; i<3; i++) {
+		if (settori[i].abilitato) {
+			trovato = true;
+			break;
+		}
+	}
+	return trovato;
+}
+
 void loop() {
 	retrieveTouch();
-
+	if(getStatusSettori()) {
+		statusSettoriMessage = "settori abilitati";
+	}else {
+		statusSettoriMessage = "settori non abilitati";
+	}
 	if (z > MINPRESSURE && z < MAXPRESSURE) {
 		Serial.print("x = ");
 		Serial.print(x);
@@ -164,6 +228,9 @@ void disegnaCursore() {
 		tft.setBackColor(0, 0, 0);
 		tft.print("Soglia", LEFT, terzaRiga);
 		tft.printNumI(tempSoglia, 100, terzaRiga);
+
+		// messaggio di stato settori
+		tft.print(statusSettoriMessage, LEFT, quartaRiga);
 	}
 }
 
@@ -205,12 +272,14 @@ void createMainMenu() {
 	
 	tft.setFont(BigFont);
 	
+	// data odierna
 	tft.print("11.06.2017", LEFT, primaRiga);
 	tft.print("Dom", 180, primaRiga);
 	
+	// ora corrente
+	tft.print("16:08.41", LEFT, secondaRiga); // forse conviene eliminare i secondi che servono a poco
 	
-	tft.print("16:08.41", LEFT, secondaRiga);
-	tft.print(statusSettoriMessage, LEFT, quartaRiga);
+	
 
 	//l'altezza del carattere è 15 pixel
 	tft.fillRect(0, 40, 30, 55); // ora
@@ -219,8 +288,6 @@ void createMainMenu() {
 
 	disegnaCursore();
 
-	//tft.print("Sistema ON", LEFT, 90);
-
-	
-
 }
+
+
