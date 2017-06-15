@@ -1,0 +1,73 @@
+// 
+// 
+// 
+#include <LiquidCrystal_I2C.h>
+#include "menu.h"
+
+void MenuClass::init(HardwareSerial *port, LiquidCrystal_I2C *l)
+{
+	indiceVariabili = -1;
+	ser = port;
+	lcd = l;
+	lcd->init();
+	lcd->backlight();
+	ser->println("INIT");
+	lcd->clear();
+	lcd->setCursor(0, 0);
+	lcd->print("INIT");
+}
+
+void MenuClass::addMenu(int *value)
+{
+	partenza = value;
+
+}
+
+void MenuClass::addMenu2(int *value)
+{
+	indiceVariabili++;
+	variabili[indiceVariabili] = value;
+}
+
+void MenuClass::addTempo(_tempo *value)
+{
+	indiceVariabili++;
+	items[indiceVariabili]->testo = "MENU";
+	items[indiceVariabili]->type = 0;
+	items[indiceVariabili]->t = value;
+
+
+}
+
+void MenuClass::addData(_data * value)
+{
+}
+
+void MenuClass::debug()
+{
+	int i;
+
+	ser->print("DEBUG ");
+	ser->println(*partenza);
+	lcd->clear();
+	
+	//lcd->print("partenza ");
+	//lcd->print (*partenza);
+	//lcd->print("variabili ");
+	for (i = 0; i <= indiceVariabili; i++) {
+		lcd->setCursor(i*3,0);
+		//lcd->print(*variabili[i]);
+		ser->print(items[i]->t->ora);
+		ser->print(":");
+		ser->print(items[i]->t->minuti);
+		ser->print(".");
+		ser->println(items[i]->t->secondi);
+
+	}
+	
+
+
+}
+
+MenuClass Menu;
+
