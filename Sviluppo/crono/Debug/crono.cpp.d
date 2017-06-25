@@ -22,5 +22,4 @@ C:\Users\Gianfilippo\AppData\Local\Temp\VMBuilds\crono\mega_atmega2560\Debug\cro
  C:\Program\ Files\ (x86)\Arduino\libraries\SD\src/utility/SdInfo.h \
  C:\Program\ Files\ (x86)\Arduino\libraries\SD\src/utility/FatStructs.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/Print.h \
- C:\Program\ Files\ (x86)\Arduino\libraries\SD\src/utility/SdFatUtil.h \
- C:\Program\ Files\ (x86)\Microsoft\ Visual\ Studio\2017\Community\Common7\IDE\Extensions\02oghilb.30b\Micro\ Platforms\default\debuggers\VM_DBG/VM_DBG.h
+ C:\Program\ Files\ (x86)\Arduino\libraries\SD\src/utility/SdFatUtil.h

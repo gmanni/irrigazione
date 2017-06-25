@@ -16,6 +16,12 @@
 #define terzaRiga 70
 #define quartaRiga 100
 
+typedef struct _data
+{
+	int giorno;
+	int mese;
+	int anno;
+};
 typedef struct _orario
 {
 	int ora;
@@ -42,6 +48,9 @@ typedef struct _settore
 
 };
 
+const int giorniMax[] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+const int giorniMaxBisestile[] = {31,29,31,30,31,30,31,31,30,31,30,31 };
+
 _settore settori[3];
 
 const int PIN_SD = 4; // pin of sd card
@@ -62,6 +71,7 @@ String currentMenu = "";
 String statusSettori = "";
 String statusSettoriMessage = "";
 _orario orario;
+_data oggi;
 
 TouchScreen ts(A0, A3, A2, A1); // LANDSCAPE init TouchScreen port pins
 
@@ -85,6 +95,9 @@ void setup() {
 	Serial.begin(9600);
 	orario.ora = 16;
 	orario.minuti = 37;
+	oggi.giorno = 11;
+	oggi.mese = 6;
+	oggi.anno = 2017;
 
 	settori[0].nome = "settore 1";
 	settori[0].abilitato = false;
@@ -165,9 +178,9 @@ void getStatusSettori() {
 		}
 	}
 	if (trovato) {
-		statusSettoriMessage = "settori abilitati";
+		statusSettoriMessage = "Settori: OK";
 	}else {
-		statusSettoriMessage = "settori non abilitati";
+		statusSettoriMessage = "Settori: NA";
 	}
 	// messaggio di stato settori
 	tft.print(statusSettoriMessage, LEFT, quartaRiga);
@@ -183,10 +196,26 @@ void loop() {
 		Serial.print("\ty = ");
 		Serial.println(y);
 
-		if (y > 50 && y < 85) {
-			if (x > 100 && x < 140) {
-				// questo è la soglia
-				
+		if (y > 0 && y < 30) {
+			if (x > 0 && x < 30) {
+				// giorno
+				Serial.println("giorno");
+				currentMenu = "GG";
+				disegnaMenu();
+				disegnaCursore();
+			}else if (x > 50 && x < 80) {
+				// mese
+				Serial.println("mese");
+				currentMenu = "MM";
+				disegnaMenu();
+				disegnaCursore();
+
+			}else if(x > 98 && x < 160) {
+				// anno
+				Serial.println("anno");
+				currentMenu = "YY";
+				disegnaMenu();
+				disegnaCursore();
 			}
 		}else if(y>30 && y<45){
 			if (x > 0 && x < 30) {
@@ -194,7 +223,6 @@ void loop() {
 				currentMenu = "O";
 				disegnaMenu();
 				disegnaCursore();
-
 			}else if (x>50 && x<80) {
 				Serial.println("minuti");
 				currentMenu = "M";
@@ -210,27 +238,76 @@ void loop() {
 				if (currentMenu == "S") {
 					
 				}else if (currentMenu == "O") {
-					orario.ora++;
+					if (orario.ora == 23) {
+						orario.ora = 0;
+					} else if (orario.ora < 23){
+						orario.ora++;
+					}
 					disegnaCursore();
 				}else if (currentMenu == "M") {
-					orario.minuti++;
+					if (orario.minuti == 59) {
+						orario.minuti = 0;
+					} else if (orario.ora < 58){
+						orario.minuti++;
+					}
+					disegnaCursore();
+				}else if (currentMenu == "GG") {
+					if ((oggi.anno % 4) == 0) {
+						if (oggi.giorno < giorniMaxBisestile[oggi.mese - 1]) {
+							oggi.giorno++;
+							disegnaCursore();
+						}
+					} else {
+						if (oggi.giorno < giorniMax[oggi.mese - 1]) {
+							oggi.giorno++;
+							disegnaCursore();
+						}
+					}
+					
+				}else if (currentMenu == "MM") {
+					if(oggi.mese < 12){
+						oggi.mese++;
+						disegnaCursore();
+					}
+				}else if (currentMenu == "YY") {
+					oggi.anno++;
 					disegnaCursore();
 				}
 
-			}
-			else if (x > 60 && x < 100) {
+			}else if (x > 60 && x < 100) {
 				Serial.println("puls -");
 				if (currentMenu == "S") {
-					
+
 				}else if (currentMenu == "O") {
-					orario.ora--;
+					if (orario.ora == 0) {
+						orario.ora = 23;
+					} else if (orario.ora > 0) {
+						orario.ora--;
+					}
 					disegnaCursore();
 				}else if (currentMenu == "M") {
-					orario.minuti--;
+					if (orario.minuti == 0) {
+						orario.minuti = 59;
+					}else if(orario.minuti > 0){
+						orario.minuti--;
+					}
+					
+					disegnaCursore();
+				}else if (currentMenu == "GG") {
+					if (oggi.giorno > 1) {
+						oggi.giorno--;
+						disegnaCursore();
+					}
+				}else if (currentMenu == "MM") {
+					if(oggi.mese > 1){
+						oggi.mese--;
+						disegnaCursore();
+					}
+				}else if (currentMenu == "YY") {
+					oggi.anno--;
 					disegnaCursore();
 				}
-			}
-			else if (x > 120 && x < 180) {
+			}else if (x > 120 && x < 180) {
 				Serial.println("puls esc");
 				currentMenu = "";
 				disegnaMenu();
@@ -245,20 +322,44 @@ void disegnaCursore() {
 	}else if (currentMenu == "O") {
 		tft.setBackColor(0, 0, 0);
 		tft.setColor(255, 0, 0);
-		tft.print(String(orario.ora, DEC), LEFT, secondaRiga);
+		tft.print(convertiDueCifre(orario.ora), LEFT, secondaRiga);
 		tft.setColor(255, 255, 255);
 	}else if (currentMenu == "M") {
 		tft.setBackColor(0, 0, 0);
 		tft.setColor(255, 0, 0);
-		tft.print(String(orario.minuti, DEC), 50, secondaRiga);
+		tft.print(convertiDueCifre(orario.minuti), 50, secondaRiga);
+		tft.setColor(255, 255, 255);
+	}else if(currentMenu == "GG"){
+		tft.setBackColor(0, 0, 0);
+		tft.setColor(255, 0, 0);
+		tft.print(convertiDueCifre(oggi.giorno), LEFT, primaRiga);
+		tft.setColor(255, 255, 255);
+	}else if (currentMenu == "MM") {
+		tft.setBackColor(0, 0, 0);
+		tft.setColor(255, 0, 0);
+		tft.print(convertiDueCifre(oggi.mese), 50, primaRiga);
+		tft.setColor(255, 255, 255);
+	}else if (currentMenu == "YY") {
+		tft.setBackColor(0, 0, 0);
+		tft.setColor(255, 0, 0);
+		tft.print(String(oggi.anno, DEC), 98, primaRiga);
 		tft.setColor(255, 255, 255);
 	}else{
 		tft.setColor(255, 255, 255);
 		tft.setBackColor(0, 0, 0);
 		
-		
-		tft.print(String(orario.ora, DEC) + ":" + String(orario.minuti, DEC), LEFT, secondaRiga);
+		// data odierna
+		tft.print(convertiDueCifre(oggi.giorno), LEFT, primaRiga);
+		tft.print(".", 33, primaRiga);
+		tft.print(convertiDueCifre(oggi.mese), 50, primaRiga);
+		tft.print(".", 83, primaRiga);
+		tft.print(String(oggi.anno, DEC), 98, primaRiga);
+		//tft.print("Dom", 180, primaRiga);
 
+		// ora corrente
+		tft.print(convertiDueCifre(orario.ora), LEFT, secondaRiga);
+		tft.print(":", 33, secondaRiga);
+		tft.print(convertiDueCifre(orario.minuti), 50, secondaRiga);
 		
 	}
 }
@@ -301,9 +402,7 @@ void createMainMenu() {
 	
 	tft.setFont(BigFont);
 	
-	// data odierna
-	tft.print("11.06.2017", LEFT, primaRiga);
-	tft.print("Dom", 180, primaRiga);
+	
 	
 	// ora corrente
 	//tft.print(String(orario.ora, DEC) + ":" + String(orario.minuti, DEC), LEFT, secondaRiga);
@@ -316,12 +415,18 @@ void createMainMenu() {
 	//tft.fillRect(98, 40, 128, 45); // secondi
 
 	// posizionamenti giorno mese e anno
-	tft.fillRect(0, 0, 30, 23); // giorno
-	tft.fillRect(50, 0, 80, 15); // mese
-	tft.fillRect(98, 0, 160, 15); // anno
+	//tft.fillRect(0, 0, 30, 15); // giorno
+	//tft.fillRect(50, 0, 80, 15); // mese
+	//tft.fillRect(98, 0, 160, 15); // anno
 
 	disegnaCursore();
-
 }
 
+String convertiDueCifre(int valoreDaConvertire) {
+	String app = String(valoreDaConvertire);
+	if (valoreDaConvertire < 10) {
+		app = "0" + String(valoreDaConvertire);
+	}
+	return app;
+}
 
